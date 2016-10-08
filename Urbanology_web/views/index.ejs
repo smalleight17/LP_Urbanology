@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+
+<body background = 'grey-wallpaper.png'>
+<div class="container">
+<h1>Database Results</h1>
+
+<%results.forEach(function(r){%>
+<h3 class="edit" id = "question_<%= r.question_id%>"><%=r.question%></h3>
+
+<table style="width:800px"> 
+    <tr><th class="token">Tokens</th>
+    <%r.token.forEach(function(aToken){%>
+        <td class="token"><%=aToken%></td>
+    <%});%>
+    </tr>
+    <tr>
+        <td class = "yes">Yes</td>
+        <%var index_yes = 1%>
+    <%r.yes_affect.forEach(function(yes_score){%>
+        <td class = "yes edit" id="<%= r.question_id%>_<%= index_yes%>_yes"><%=yes_score%></td>
+        <%index_yes++%>
+    <%});%>
+    </tr>
+    <tr><td class="no">No</td>
+        <%var index_no = 1%>
+    <%r.no_affect.forEach(function(no_score){%>
+        <td class="edit no" id="<%= r.question_id%>_<%= index_no%>_no"><%=no_score%></td>
+         <%index_no++%>
+    <%});%>
+    </tr>
+</table>
+<br/><br/>
+<%});%>
+
+<h1>Add A New Question:</h1>
+<form method="post" action="https://obscure-ridge-47723.herokuapp.com/create">
+    <input type="text" size = "131" height="30px" id="question" name="question" placeholder="Enter a new question here" />
+    <table style="width:800px"> 
+    <tr>
+        <%tokens.forEach(function(t){%>
+        <td class="token"><label for="question"><%= t.token%></label></td>
+        <%});%>
+    </tr>
+    <tr>
+        <%tokens.forEach(function(t){%>
+        <td><input type="text" name="<%= t.id%>_yes" value = "0" /></td>
+        <%});%>
+    </tr>
+    <tr>
+        <%tokens.forEach(function(t){%>
+        <td><input type="text" name="<%= t.id%>_no" value = "0" /></td>
+        <%});%>
+    </tr>
+    <tr>
+    <td colspan="5"><input type = "submit" value = "Submit" width = 100 height = 50></td>
+    </tr>
+</table>
+</form>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src = "/js/jquery.jeditable.js"></script> 
+
+<script type="text/javascript">
+$(document).ready(function() {
+     $('.edit').editable('https://obscure-ridge-47723.herokuapp.com/edit',{
+        cancel: 'cancel',
+        submit    : 'OK',
+     });
+ });
+</script>
+</body>
+</html>
