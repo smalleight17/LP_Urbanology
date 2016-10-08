@@ -1,0 +1,112 @@
+CREATE TABLE Questions(
+	id SERIAL PRIMARY KEY,
+	question VARCHAR(200) NOT NULL
+);
+
+CREATE TABLE Tokens(
+	id SERIAL PRIMARY KEY,
+	token VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE TokenMapping(
+	question_id INT NOT NULL,
+	token_id INT NOT NULL,
+	yes_affect INT NOT NULL,
+	no_affect INT NOT NULL,
+	UNIQUE (question_id, token_id)
+);
+
+CREATE TABLE QuestionStat(
+	question_id INT PRIMARY KEY,
+	yes_num INT NOT NULL,
+	no_num INT NOT NULL
+);
+
+INSERT INTO Questions(question) values ('Should cities enforce a minimum height for new residential buildings?');
+INSERT INTO Questions(question) values ('Will you install streetlights that are 20% dimmer than the existing lights to save money and electricity?');
+INSERT INTO Questions(question) values ('Will you authorize the conversation of a downtown affordable-hosing block into a tourist hotel?');
+INSERT INTO Questions(question) values ('Will you allow twice as many vendors to be licensed in public parks?');
+INSERT INTO Questions(question) values ('Will you authorize a tax on book sales in order to expend library services?');
+
+INSERT INTO Tokens(token) values('Income Tax');
+INSERT INTO Tokens(token) values('Public Health');
+INSERT INTO Tokens(token) values('Entrepreneurship');
+INSERT INTO Tokens(token) values('Community Art');
+INSERT INTO Tokens(token) values('Immigration');
+
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(1,1,5,-3);
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(1,2,2,-5);
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(1,3,3,-1);
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(1,4,-3,4);
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(1,5,0,0);
+
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(2,1,1,-5);
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(2,2,-2,4);
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(2,3,3,-3);
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(2,4,-4,2);
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(2,5,5,-1);
+
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(3,1,-1,5);
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(3,2,2,-4);
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(3,3,-3,3);
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(3,4,4,-2);
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(3,5,-5,1);
+ 
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(4,1,3,-5);
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(4,2,-6,1);
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(4,3,2,-4);
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(4,4,4,-3);
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(4,5,-5,2);
+
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(5,1,-4,2);
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(5,2,2,-6);
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(5,3,-1,4);
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(5,4,5,-1);
+INSERT INTO TokenMapping(question_id, token_id,yes_affect,no_affect) values(5,5,3,-3);
+
+INSERT INTO QuestionStat(question_id, yes_num, no_num) values (1,3,4);
+INSERT INTO QuestionStat(question_id, yes_num, no_num) values (2,5,2);
+INSERT INTO QuestionStat(question_id, yes_num, no_num) values (3,1,6);
+INSERT INTO QuestionStat(question_id, yes_num, no_num) values (4,7,0);
+INSERT INTO QuestionStat(question_id, yes_num, no_num) values (5,2,5);
+
+// show for web admin
+SELECT a.id as questionid, a.question, array_agg(b.id ORDER BY b.id) as token, 
+array_agg(c.yes_affect ORDER BY c.token_id) as yes_affect,
+array_agg(c.no_affect ORDER BY c.token_id) as no_affect
+FROM Questions a, Tokens b, TokenMapping c
+WHERE a.id = c.question_id 
+AND c.token_id = b.id
+GROUP BY a.id;
+
+SELECT b.id, c.yes_affect, c.no_affect
+FROM Tokens b, TokenMapping c
+WHERE c.token_id = b.id
+ORDER BY b.id;
+
+SELECT a.question, array_agg(b.token||','||c.yes_affect||','||c.no_affect) 
+FROM Questions a, Tokens b, TokenMapping c
+WHERE a.id = c.question_id 
+AND c.token_id = b.id
+GROUP BY a.id
+ORDER BY a.id;
+
+SELECT question_id, array_agg(token_id||';'||yes_affect||';'||no_affect) 
+FROM TokenMapping
+GROUP BY question_id;
+
+-- SELECT a.question, string_agg(b.token::character varying)
+-- FROM Questions a, Tokens b, TokenMapping c
+-- WHERE a.id = c.question_id 
+-- AND c.token_id = b.id
+-- GROUP BY a.id;
+
+SELECT token_id, SUM(yes_affect * yes_num + no_affect * no_num)
+FROM
+(SELECT b.token_id, b.question_id, b.yes_affect, a.yes_num, 
+b.no_affect, a.no_num
+FROM QuestionStat a, TokenMapping b
+WHERE a.question_id = b.question_id) as TMP
+GROUP BY token_id
+ORDER BY token_id;
+
