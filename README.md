@@ -13,3 +13,16 @@ The page will automatically load all info from database. Click on any numbers or
 
 **An executable app of front-end can be found under:  Urbanology_c++/Urbanology**  
 When opening the app, tap the space so the webcam can take a photo of you and proceed to questions. The photo will be saved under /assets. When a question is presented, drag and drop it to Yes or No on the corners to answer it. The tokens will move to different points.
+
+**If you need to setup a local server**  
+Download PostgreSQL from here: https://www.postgresql.org/download/  
+Start the database server  
+Run queries(create and insert queries, not select) in sql file
+
+```
+ cd Urbanology_web
+ npm install
+ node index.js
+```
+Then you can go to http://localhost:5000/ in browser.
+
